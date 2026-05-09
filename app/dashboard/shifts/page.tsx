@@ -42,8 +42,8 @@ export default function ShiftBoardPage() {
         <div
           style={{
             position: 'fixed',
-            top: '24px',
-            right: '24px',
+            top: 'var(--page-gutter)',
+            right: 'var(--page-gutter)',
             zIndex: 100,
             background: 'var(--color-sage-dark)',
             color: 'white',
@@ -79,9 +79,9 @@ export default function ShiftBoardPage() {
       {/* Shift grid */}
       {shifts.length === 0 ? (
         <div
-          style={{
+            style={{
             textAlign: 'center',
-            padding: '64px 24px',
+            padding: '64px var(--page-gutter)',
             background: 'var(--color-white)',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--color-border)',

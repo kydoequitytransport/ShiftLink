@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="hidden md:flex"
       >
         {/* Logo */}
-        <div style={{ padding: '24px 24px 20px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ padding: '24px var(--page-gutter) 20px', borderBottom: '1px solid var(--color-border)' }}>
           <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: '1.1875rem', color: 'var(--color-ink)' }}>
             Shift<em style={{ color: 'var(--color-sage)', fontStyle: 'italic' }}>Link</em>
           </Link>
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           style={{
             background: 'var(--color-white)',
             borderBottom: '1px solid var(--color-border)',
-            padding: '16px 20px',
+            padding: '16px var(--page-gutter)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',

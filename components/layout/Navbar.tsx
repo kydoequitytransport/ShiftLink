@@ -23,7 +23,7 @@ export function Navbar() {
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '0 24px',
+          padding: '0 var(--page-gutter)',
           height: '68px',
           display: 'flex',
           alignItems: 'center',
@@ -38,7 +38,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }} className="hidden md:flex">
+        <nav className="hidden md:flex items-center gap-10">
           <Link
             href="/#how-it-works"
             style={{ fontSize: '0.8125rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-ink-muted)', fontWeight: 500 }}
@@ -54,10 +54,10 @@ export function Navbar() {
             Facilities
           </Link>
           <Link href="/auth/login">
-            <Button variant="ghost" size="sm">Sign in</Button>
+            <Button variant="ghost" size="md">Sign in</Button>
           </Link>
           <Link href="/signup">
-            <Button variant="primary" size="sm">Get Started</Button>
+            <Button variant="primary" size="md" className="rounded-[var(--radius-lg)]">Get Started</Button>
           </Link>
         </nav>
 
@@ -65,7 +65,7 @@ export function Navbar() {
         <button
           className="md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
-          style={{ color: 'var(--color-ink)', background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}
+          style={{ color: 'var(--color-ink)', background: 'none', border: 'none', cursor: 'pointer', padding: '12px' }}
           aria-label="Toggle menu"
         >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -79,7 +79,7 @@ export function Navbar() {
           style={{
             background: 'var(--color-cream)',
             borderTop: '1px solid var(--color-border)',
-            padding: '20px 24px',
+            padding: '20px var(--page-gutter)',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',

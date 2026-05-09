@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FilterState, ShiftRole } from '@/lib/types';
+import { FilterState } from '@/lib/types';
 import { SHIFT_ROLES } from '@/lib/utils';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
@@ -27,7 +27,7 @@ export function ShiftFilter({ filters, onUpdate, onReset, totalCount, filteredCo
         background: 'var(--color-white)',
         border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-md)',
-        padding: '20px 24px',
+        padding: '20px var(--page-gutter)',
         display: 'flex',
         alignItems: 'flex-end',
         gap: '16px',
@@ -63,10 +63,11 @@ export function ShiftFilter({ filters, onUpdate, onReset, totalCount, filteredCo
           onChange={(e) => onUpdate('date', e.target.value)}
           style={{
             width: '100%',
-            padding: '12px 16px',
+            paddingInline: `calc(16px + var(--input-extra-side, 8px))`,
+            paddingBlock: `calc(12px + var(--input-extra-vertical, 4px))`,
             background: 'var(--color-white)',
             border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-sm)',
+            borderRadius: 'var(--radius-md)',
             fontSize: '0.875rem',
             color: 'var(--color-ink)',
             fontFamily: 'var(--font-body)',

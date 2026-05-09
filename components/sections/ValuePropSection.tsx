@@ -21,7 +21,7 @@ export function ValuePropSection() {
       id="how-it-works"
       style={{
         background: 'var(--color-parchment)',
-        padding: '80px 24px',
+        padding: '80px var(--page-gutter)',
       }}
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -148,9 +148,13 @@ export function ValuePropSection() {
               ))}
             </ul>
 
-            <Link href="/signup?type=professional" style={{ marginTop: '8px' }}>
-              <Button variant="secondary" size="md">Join as a Professional →</Button>
-            </Link>
+            <div style={{ marginTop: '16px', width: '100%' }}>
+              <div style={{ maxWidth: '420px' }}>
+                <Link href="/signup?type=professional">
+                  <Button variant="secondary" size="lg" fullWidth>Join as a Professional →</Button>
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Facilities card */}
@@ -239,19 +243,24 @@ export function ValuePropSection() {
               ))}
             </ul>
 
-            <Link href="/signup?type=facility" style={{ marginTop: '8px' }}>
-              <Button
-                variant="ghost"
-                size="md"
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  color: 'var(--color-cream)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                }}
-              >
-                Post Your First Shift →
-              </Button>
-            </Link>
+            <div style={{ marginTop: '16px', width: '100%' }}>
+              <div style={{ maxWidth: '420px' }}>
+                <Link href="/signup?type=facility">
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    fullWidth
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      color: 'var(--color-cream)',
+                      border: '1px solid rgba(255,255,255,0.14)',
+                    }}
+                  >
+                    Post Your First Shift →
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -55,7 +55,7 @@ export default function DashboardPage() {
               background: 'var(--color-white)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)',
-              padding: '24px 20px',
+              padding: '24px var(--page-gutter)',
               boxShadow: 'var(--shadow-card)',
             }}
           >

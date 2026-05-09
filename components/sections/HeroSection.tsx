@@ -5,7 +5,7 @@ export function HeroSection() {
   return (
     <section
       style={{
-        padding: '96px 24px 80px',
+        padding: '96px var(--page-gutter) 80px',
         maxWidth: '1200px',
         margin: '0 auto',
       }}

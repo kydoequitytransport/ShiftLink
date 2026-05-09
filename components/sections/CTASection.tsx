@@ -6,7 +6,7 @@ export function CTASection() {
     <section
       style={{
         background: 'var(--color-ink)',
-        padding: '80px 24px',
+        padding: '80px var(--page-gutter)',
       }}
     >
       <div

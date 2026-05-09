@@ -13,7 +13,7 @@ export default function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px 24px',
+        padding: '40px var(--page-gutter)',
         background: 'var(--color-cream)',
       }}
     >

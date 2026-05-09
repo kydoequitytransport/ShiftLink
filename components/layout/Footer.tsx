@@ -6,7 +6,7 @@ export function Footer() {
       style={{
         borderTop: '1px solid var(--color-border)',
         background: 'var(--color-parchment)',
-        padding: '48px 24px 32px',
+        padding: '48px var(--page-gutter) 32px',
         marginTop: 'auto',
       }}
     >

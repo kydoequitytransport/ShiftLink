@@ -24,7 +24,7 @@ const testimonials = [
 
 export function TrustSection() {
   return (
-    <section style={{ padding: '80px 24px' }}>
+    <section style={{ padding: '80px var(--page-gutter)' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px', flexWrap: 'wrap', gap: '16px' }}>
           <div>

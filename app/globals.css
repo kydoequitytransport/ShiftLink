@@ -26,6 +26,7 @@
 
   --shadow-card: 0 1px 3px rgba(26,26,24,0.06), 0 4px 16px rgba(26,26,24,0.04);
   --shadow-elevated: 0 4px 24px rgba(26,26,24,0.10);
+  --page-gutter: 24px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,3 +60,18 @@ body {
 a { color: inherit; text-decoration: none; }
 button, a, input, select { transition: all 0.18s ease; }
 input, select, textarea { font-family: var(--font-body); }
+
+/* Increase horizontal gutter on small screens for more breathing room */
+@media (max-width: 640px) {
+  :root { --page-gutter: 32px; }
+}
+
+/* Extra horizontal space added per side for buttons. Adjust to change
+   how much wider buttons become compared to their base padding. */
+:root { --button-extra-side: 8px; }
+
+  /* Extra spacing for form controls (inputs/selects) - per-side and vertical
+    Set horizontal extra to 0 to restore original control widths, and reduce
+    vertical extra so inputs are slightly shorter than before (~-5px total).
+  */
+  :root { --input-extra-side: 0px; --input-extra-vertical: 1.5px; }
