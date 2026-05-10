@@ -35,22 +35,21 @@ async function buildUser(userId: string, email: string): Promise<AuthUser | null
     };
   }
 
-  // If user exists in Supabase Auth but not in professionals/facilities, auto-create minimal professionals row
-  // (You can expand this logic for facilities if needed)
+  // If user exists in Supabase Auth but not in professionals/facilities, auto-create minimal professionals row (upsert)
   if (email) {
     // Try to get user metadata from Supabase Auth
     const { data: userMeta } = await supabase.auth.admin.getUserById(userId);
     const name = userMeta?.user?.user_metadata?.full_name || email.split('@')[0];
     const role = 'Registered Nurse'; // Default/fallback
-    const { error: insertErr } = await supabase.from('professionals').insert({
+    const { error: upsertErr } = await supabase.from('professionals').upsert({
       profile_id: userId,
       name,
       email,
       role,
       license_number: '',
       years_of_experience: 0,
-    });
-    if (!insertErr) {
+    }, { onConflict: 'profile_id' });
+    if (!upsertErr) {
       // Try again to fetch
       let { data: newData, error: newError } = await supabase
         .from('professionals')
