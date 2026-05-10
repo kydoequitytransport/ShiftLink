@@ -87,7 +87,12 @@ export function useAuth() {
     // Hydrate from existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const u = await buildUser(session.user.id, session.user.email ?? '');
+        let u = await buildUser(session.user.id, session.user.email ?? '');
+        // Retry once after 500ms if not found (handles race/session lag)
+        if (!u) {
+          await new Promise(res => setTimeout(res, 500));
+          u = await buildUser(session.user.id, session.user.email ?? '');
+        }
         setUser(u ?? null);
         if (!u && typeof window !== 'undefined') {
           window.alert('Login session found but no user profile exists. Please contact support.');
