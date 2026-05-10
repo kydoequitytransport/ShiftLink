@@ -4,19 +4,37 @@ import { useState, useEffect } from 'react';
 import { AuthUser } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 
+// Patch: fetch from professionals table using profile_id
 async function buildUser(userId: string, email: string): Promise<AuthUser | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('full_name, user_type')
-    .eq('id', userId)
+  // Try professionals first
+  let { data, error } = await supabase
+    .from('professionals')
+    .select('name, role')
+    .eq('profile_id', userId)
     .single();
-  if (error || !data) return null;
-  return {
-    id: userId,
-    name: data.full_name || '',
-    email,
-    type: data.user_type,
-  };
+  if (!error && data) {
+    return {
+      id: userId,
+      name: data.name || '',
+      email,
+      type: 'professional',
+    };
+  }
+  // Optionally: fallback to facilities if needed
+  ({ data, error } = await supabase
+    .from('facilities')
+    .select('contact_name')
+    .eq('profile_id', userId)
+    .single());
+  if (!error && data) {
+    return {
+      id: userId,
+      name: data.name || '',
+      email,
+      type: 'facility',
+    };
+  }
+  return null;
 }
 
 export function useAuth() {
