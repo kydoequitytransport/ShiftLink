@@ -22,9 +22,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ];
 
   useEffect(() => {
-    if (!loading && !user) router.replace('/auth/login');
+    // Only redirect after loading is fully done and there's genuinely no user.
+    // This prevents the brief null state during profile fetch from triggering a redirect.
+    if (!loading && user === null) router.replace('/auth/login');
   }, [user, loading, router]);
 
+  // Show spinner while auth is resolving (session restore or fresh login)
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-cream)' }}>
       <div style={{ width: '24px', height: '24px', border: '2px solid var(--color-border)', borderTopColor: 'var(--color-sage)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}/>

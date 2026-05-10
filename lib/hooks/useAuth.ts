@@ -10,26 +10,32 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await fetchProfile(session.user.id, session.user.email ?? '');
-        setUser(profile);
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+    // Single source of truth: onAuthStateChange handles INITIAL_SESSION on mount
+    // which fires synchronously with the persisted session — no getSession() race needed.
+    let latestRequestId = 0;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          if (event === 'SIGNED_IN') await new Promise(r => setTimeout(r, 800));
-          const profile = await fetchProfile(session.user.id, session.user.email ?? '');
-          setUser(profile);
+          const requestId = ++latestRequestId;
+          try {
+            const profile = await fetchProfile(session.user.id, session.user.email ?? '');
+            // Only apply if this is still the latest request (avoid stale updates)
+            if (requestId === latestRequestId) {
+              setUser(profile);
+              setLoading(false);
+            }
+          } catch {
+            if (requestId === latestRequestId) {
+              setUser(null);
+              setLoading(false);
+            }
+          }
         } else {
+          ++latestRequestId; // invalidate any in-flight fetch
           setUser(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
