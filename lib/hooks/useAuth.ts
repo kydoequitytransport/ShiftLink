@@ -28,7 +28,7 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const u = await buildUser(session.user.id, session.user.email ?? '');
-        setUser(u);
+        setUser(u ?? null);
       } else {
         setUser(null);
       }
@@ -40,7 +40,7 @@ export function useAuth() {
       async (event, session) => {
         if (session?.user) {
           const u = await buildUser(session.user.id, session.user.email ?? '');
-          setUser(u);
+          setUser(u ?? null);
         } else {
           setUser(null);
         }

@@ -81,17 +81,14 @@ create table claims (
 ```
 
 **Tradeoffs:**
-- Real-time persistence via Supabase, no more mock data.
+- Real-time persistence via Supabase. No mock data or fallback logic.
 - Minimal auth (can be extended).
-- Easy to revert to mock data if needed (see git history).
 
 ### Tailwind CSS (utility classes + CSS variables)
 **Why:** Tailwind gives fine-grained control over the spacing and typography hierarchy the eucalyptus.health design reference demands. CSS custom properties (`--color-sage`, `--font-display`, etc.) are used for theming so a single change propagates everywhere — this is what a token-based design system looks like before Figma Tokens or Style Dictionary are introduced.
 
 **Why not plain CSS modules:** CSS-in-JS or module scoping adds overhead in a time-boxed project with no team collision risk. Tailwind + CSS vars is faster and the output is easier to read in a review.
 
-### Mock Data + sessionStorage Auth
-**Why:** The brief says "dummy auth is fine." Keeping auth as a thin hook (`useAuth`) means replacing it with NextAuth or Clerk is a one-file change — the contracts (`AuthUser`, the hook interface) stay identical. `sessionStorage` was chosen over `localStorage` so state clears on tab close, which is safer default behavior for auth demos.
 
 ---
 
@@ -117,7 +114,7 @@ shiftlink/
 │
 ├── lib/
 │   ├── types/                    # Shared TypeScript types
-│   ├── mock-data/                # Seed data (shifts, auth user)
+│   ├── mock-data/                # (deprecated, not used)
 │   ├── hooks/                    # useAuth, useShifts
 │   └── utils/                    # formatDate, formatRate, cn…
 │
@@ -131,7 +128,7 @@ shiftlink/
 
 ## Tradeoffs
 
-**Database:** All state is now persisted in Supabase. No more in-memory/sessionStorage for shifts.
+**Database:** All state is now persisted in Supabase. No in-memory/sessionStorage or mock fallback for any data.
 - **No image assets:** Heroic whitespace and typography are doing the visual heavy lifting intentionally, per the eucalyptus.health reference.
 - **Mock claim is local-only:** Claiming a shift updates local React state; it resets on page refresh. A real implementation would PATCH the shift via API.
 - **No server-side auth middleware:** The dashboard guard is client-side only (`useEffect` redirect). In production, Next.js middleware would handle this at the edge.
