@@ -67,6 +67,7 @@ export function SignupForm() {
     setErrors({});
     setLoading(true);
     try {
+      console.log('[SIGNUP] Submitting as', userType);
       if (userType === 'professional') {
         const authUser = await signup({
           email: proForm.email,
@@ -84,6 +85,7 @@ export function SignupForm() {
           years_of_experience: Number(proForm.yearsExp) || 0,
         });
         if (insErr) throw insErr;
+        console.log('[SIGNUP] Professional inserted');
       } else {
         const authUser = await signup({
           email: facForm.email,
@@ -100,11 +102,15 @@ export function SignupForm() {
           contact_person: facForm.contactName,
         });
         if (insErr) throw insErr;
+        console.log('[SIGNUP] Facility inserted');
       }
+      console.log('[SIGNUP] Success!');
       setStep('success');
     } catch (e: any) {
+      console.error('[SIGNUP ERROR]', e);
       setErrors({ form: e.message || 'Signup failed. Please try again.' });
     } finally {
+      console.log('[SIGNUP] Done, loading should be false');
       setLoading(false);
     }
   };
