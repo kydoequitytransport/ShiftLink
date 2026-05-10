@@ -1,98 +1,84 @@
 'use client';
 
-
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Shift, FilterState } from '@/lib/types';
-// No more Supabase! In-memory mock shifts only
+import {
+  fetchOpenShifts,
+  getProfessionalId,
+  claimShift as claimShiftDB,
+  ShiftRow,
+} from '@/lib/supabase/shifts.service';
+
+function rowToShift(r: ShiftRow): Shift {
+  return {
+    id: r.id,
+    role: r.role,
+    facilityName: r.facility_name ?? '',
+    facilityLocation: r.facility_location ?? '',
+    date: r.shift_date,
+    startTime: (r.start_time ?? '').slice(0, 5),
+    endTime: (r.end_time ?? '').slice(0, 5),
+    ratePerHour: Number(r.rate_per_hour),
+    urgency: r.urgency,
+    claimedBy: r.claimed_by,
+  };
+}
 
 export function useShifts(userId?: string) {
-  // Mock data: static shifts array
-  const defaultShifts: Shift[] = [
-    {
-      id: '1',
-      role: 'Registered Nurse',
-      facilityName: 'St. Luke Hospital',
-      facilityLocation: 'Quezon City',
-      date: '2026-05-12',
-      startTime: '07:00',
-      endTime: '15:00',
-      ratePerHour: 600,
-      urgency: 'standard',
-      claimedBy: null,
-    },
-    {
-      id: '2',
-      role: 'Registered Nurse',
-      facilityName: 'Makati Med',
-      facilityLocation: 'Makati',
-      date: '2026-05-13',
-      startTime: '15:00',
-      endTime: '23:00',
-      ratePerHour: 650,
-      urgency: 'urgent',
-      claimedBy: null,
-    },
-    {
-      id: '3',
-      role: 'Registered Nurse',
-      facilityName: 'Asian Hospital',
-      facilityLocation: 'Alabang',
-      date: '2026-05-14',
-      startTime: '07:00',
-      endTime: '19:00',
-      ratePerHour: 400,
-      urgency: 'standard',
-      claimedBy: null,
-    },
-  ];
-
-  const [shifts, setShifts] = useState<Shift[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('mockShifts');
-      if (stored) return JSON.parse(stored);
-    }
-    return defaultShifts;
-  });
+  const [allRows, setAllRows] = useState<ShiftRow[]>([]);
   const [filters, setFilters] = useState<FilterState>({ role: 'All', date: '' });
-  const [loading, setLoading] = useState(false);
+  const [claimedIds, setClaimedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchOpenShifts()
+      .then(rows => { if (!cancelled) { setAllRows(rows); setLoading(false); } })
+      .catch(e => { if (!cancelled) { setError('Could not load shifts.'); setLoading(false); console.error(e); } });
+    return () => { cancelled = true; };
+  }, []);
+
   const filteredShifts = useMemo(() => {
-    return shifts.filter((shift) => {
-      const roleMatch = filters.role === 'All' || shift.role === filters.role;
-      const dateMatch = !filters.date || shift.date === filters.date;
-      return roleMatch && dateMatch;
-    });
-  }, [shifts, filters]);
+    return allRows
+      .filter(r => {
+        const roleMatch = filters.role === 'All' || r.role === filters.role;
+        const dateMatch = !filters.date || r.shift_date === filters.date;
+        return roleMatch && dateMatch;
+      })
+      .map(rowToShift);
+  }, [allRows, filters]);
 
-  const claimShift = async (shiftId: string) => {
+  const claimShift = async (shiftId: string): Promise<boolean> => {
     if (!userId) return false;
-    setShifts((prev) => {
-      const updated = prev.map((s) =>
-        s.id === shiftId && !s.claimedBy
-          ? { ...s, claimedBy: userId }
-          : s
+    try {
+      const profId = await getProfessionalId(userId);
+      if (!profId) throw new Error('No professional profile found.');
+      await claimShiftDB(shiftId, profId);
+      setClaimedIds(prev => new Set(prev).add(shiftId));
+      // Update local row so UI reflects instantly
+      setAllRows(prev =>
+        prev.map(r => r.id === shiftId ? { ...r, status: 'claimed', claimed_by: profId } : r)
       );
-      if (typeof window !== 'undefined') sessionStorage.setItem('mockShifts', JSON.stringify(updated));
-      return updated;
-    });
-    return true;
+      return true;
+    } catch (e) {
+      console.error('Claim error:', e);
+      return false;
+    }
   };
 
-  const isClaimedByUser = (shiftId: string) => {
-    const shift = shifts.find((s) => s.id === shiftId);
-    return shift?.claimedBy === userId;
-  };
+  const isClaimedByUser = (shiftId: string) => claimedIds.has(shiftId);
 
-  const updateFilter = (key: keyof FilterState, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
+  const updateFilter = (key: keyof FilterState, value: string) =>
+    setFilters(prev => ({ ...prev, [key]: value }));
 
   const resetFilters = () => setFilters({ role: 'All', date: '' });
 
   return {
     shifts: filteredShifts,
-    allShifts: shifts,
+    allShifts: allRows.map(rowToShift),
     filters,
     loading,
     error,

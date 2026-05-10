@@ -1,1 +1,2 @@
-// Supabase client removed. This file is now unused.
+// Deprecated — use lib/supabase/client.ts instead
+export { supabase } from '@/lib/supabase/client';

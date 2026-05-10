@@ -5,7 +5,7 @@ export interface Shift {
   role: ShiftRole;
   facilityName: string;
   facilityLocation: string;
-  date: string; // ISO date string
+  date: string;
   startTime: string;
   endTime: string;
   ratePerHour: number;
@@ -21,24 +21,6 @@ export type ShiftRole =
   | 'ICU Nurse'
   | 'Emergency Room Nurse'
   | 'Surgical Tech';
-
-export interface Professional {
-  id: string;
-  name: string;
-  email: string;
-  role: ShiftRole;
-  licenseNumber: string;
-  yearsOfExperience: number;
-}
-
-export interface Facility {
-  id: string;
-  name: string;
-  email: string;
-  facilityType: string;
-  address: string;
-  contactPerson: string;
-}
 
 export interface FilterState {
   role: ShiftRole | 'All';
