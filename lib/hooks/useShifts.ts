@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { Shift, FilterState } from '@/lib/types';
-// No more Supabase! In-memory mock shifts only
+
 import { useState, useMemo } from 'react';
 import { Shift, FilterState } from '@/lib/types';
+// No more Supabase! In-memory mock shifts only
 
 export function useShifts(userId?: string) {
   // Mock data: static shifts array
@@ -35,7 +34,7 @@ export function useShifts(userId?: string) {
     },
     {
       id: '3',
-      role: 'Nursing Assistant',
+      role: 'Registered Nurse',
       facilityName: 'Asian Hospital',
       facilityLocation: 'Alabang',
       date: '2026-05-14',
