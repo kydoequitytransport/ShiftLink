@@ -2,47 +2,52 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Shift, FilterState } from '@/lib/types';
-import { supabase } from '@/lib/supabaseClient';
+// No more Supabase! In-memory mock shifts only
 
-export function useShifts(userId?: string) {
-  const [shifts, setShifts] = useState<Shift[]>([]);
+  // Mock data: static shifts array
+  const initialShifts: Shift[] = [
+    {
+      id: '1',
+      role: 'Registered Nurse',
+      facilityName: 'St. Luke Hospital',
+      facilityLocation: 'Quezon City',
+      date: '2026-05-12',
+      startTime: '07:00',
+      endTime: '15:00',
+      ratePerHour: 600,
+      urgency: 'standard',
+      claimedBy: null,
+    },
+    {
+      id: '2',
+      role: 'Registered Nurse',
+      facilityName: 'Makati Med',
+      facilityLocation: 'Makati',
+      date: '2026-05-13',
+      startTime: '15:00',
+      endTime: '23:00',
+      ratePerHour: 650,
+      urgency: 'urgent',
+      claimedBy: null,
+    },
+    {
+      id: '3',
+      role: 'Nursing Assistant',
+      facilityName: 'Asian Hospital',
+      facilityLocation: 'Alabang',
+      date: '2026-05-14',
+      startTime: '07:00',
+      endTime: '19:00',
+      ratePerHour: 400,
+      urgency: 'standard',
+      claimedBy: null,
+    },
+  ];
+
+  const [shifts, setShifts] = useState<Shift[]>(initialShifts);
   const [filters, setFilters] = useState<FilterState>({ role: 'All', date: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchShifts = async () => {
-      setLoading(true);
-      setError(null);
-      // Query the view we created — already joins facility data
-      const { data, err } = await supabase
-        .from('shifts_with_facility')
-        .select('*')
-        .eq('status', 'open')
-        .order('shift_date', { ascending: true }) as any;
-
-      if (err) {
-        setError('Could not load shifts.');
-      } else if (data) {
-        setShifts(
-          data.map((s: any): Shift => ({
-            id: s.id,
-            role: s.role,
-            facilityName: s.facility_name ?? '',
-            facilityLocation: s.facility_location ?? '',
-            date: s.shift_date,
-            startTime: (s.start_time ?? '').slice(0, 5),   // "07:00:00" → "07:00"
-            endTime: (s.end_time ?? '').slice(0, 5),
-            ratePerHour: Number(s.rate_per_hour),
-            urgency: s.urgency ?? 'standard',
-            claimedBy: s.claimed_by ?? null,
-          }))
-        );
-      }
-      setLoading(false);
-    };
-    fetchShifts();
-  }, []);
 
   const filteredShifts = useMemo(() => {
     return shifts.filter((shift) => {
@@ -54,38 +59,19 @@ export function useShifts(userId?: string) {
 
   const claimShift = async (shiftId: string) => {
     if (!userId) return false;
-    // Look up the professional row for this auth user
-    const { data: prof } = await supabase
-      .from('professionals')
-      .select('id')
-      .eq('profile_id', userId)
-      .single();
-
-    if (!prof) {
-      console.error('No professional profile found for user', userId);
-      return false;
-    }
-
-    const { error: claimErr } = await supabase
-      .from('shifts')
-      .update({ status: 'claimed', claimed_by: prof.id, claimed_at: new Date().toISOString() })
-      .eq('id', shiftId)
-      .eq('status', 'open'); // safe guard
-
-    if (claimErr) {
-      console.error('Claim error:', claimErr);
-      return false;
-    }
-
     setShifts((prev) =>
-      prev.map((s) => s.id === shiftId ? { ...s, claimedBy: prof.id } : s)
+      prev.map((s) =>
+        s.id === shiftId && !s.claimedBy
+          ? { ...s, claimedBy: userId }
+          : s
+      )
     );
     return true;
   };
 
   const isClaimedByUser = (shiftId: string) => {
     const shift = shifts.find((s) => s.id === shiftId);
-    return !!shift?.claimedBy;   // any claimed shift is shown as claimed for simplicity
+    return shift?.claimedBy === userId;
   };
 
   const updateFilter = (key: keyof FilterState, value: string) => {

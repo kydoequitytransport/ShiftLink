@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { supabase } from '@/lib/supabaseClient';
+// Supabase removed: signup is disabled in mock mode
 
 type Step = 'type' | 'details' | 'success';
 
@@ -75,56 +75,8 @@ export function SignupForm() {
       }
     }, 10000);
     try {
-      let authUser;
-      if (userType === 'professional') {
-        authUser = await signup({
-          email: proForm.email,
-          password: proForm.password,
-          name: proForm.name,
-          type: 'professional',
-        });
-        if (!authUser || !authUser.id) {
-          setErrors({ form: 'Signup failed: No user ID returned.' });
-          return;
-        }
-        const { error: insErr } = await supabase.from('professionals').insert({
-          profile_id: authUser.id,
-          name: proForm.name,
-          email: proForm.email,
-          role: proForm.role,
-          license_number: proForm.licenseNumber,
-          years_of_experience: Number(proForm.yearsExp) || 0,
-        });
-        if (insErr) {
-          setErrors({ form: insErr.message || 'Failed to save professional info.' });
-          return;
-        }
-      } else {
-        authUser = await signup({
-          email: facForm.email,
-          password: facForm.password,
-          name: facForm.contactName,
-          type: 'facility',
-        });
-        if (!authUser || !authUser.id) {
-          setErrors({ form: 'Signup failed: No user ID returned.' });
-          return;
-        }
-        const { error: insErr } = await supabase.from('facilities').insert({
-          profile_id: authUser.id,
-          facility_name: facForm.facilityName,
-          facility_type: facForm.facilityType,
-          address: facForm.address,
-          contact_person: facForm.contactName,
-        });
-        if (insErr) {
-          setErrors({ form: insErr.message || 'Failed to save facility info.' });
-          return;
-        }
-      }
-      finished = true;
-      clearTimeout(timeout);
-      setStep('success');
+    setErrors({ form: 'Signup is disabled in mock mode.' });
+    setLoading(false);
     } catch (e: any) {
       finished = true;
       clearTimeout(timeout);
