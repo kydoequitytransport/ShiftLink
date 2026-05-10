@@ -67,50 +67,57 @@ export function SignupForm() {
     setErrors({});
     setLoading(true);
     try {
-      console.log('[SIGNUP] Submitting as', userType);
+      let authUser;
       if (userType === 'professional') {
-        const authUser = await signup({
+        authUser = await signup({
           email: proForm.email,
           password: proForm.password,
           name: proForm.name,
           type: 'professional',
         });
-        // Insert into professionals with snake_case columns matching our SQL migration
+        if (!authUser || !authUser.id) {
+          setErrors({ form: 'Signup failed: No user ID returned.' });
+          return;
+        }
         const { error: insErr } = await supabase.from('professionals').insert({
-          profile_id: authUser.id,          // FK → profiles.id
+          profile_id: authUser.id,
           name: proForm.name,
           email: proForm.email,
           role: proForm.role,
           license_number: proForm.licenseNumber,
           years_of_experience: Number(proForm.yearsExp) || 0,
         });
-        if (insErr) throw insErr;
-        console.log('[SIGNUP] Professional inserted');
+        if (insErr) {
+          setErrors({ form: insErr.message || 'Failed to save professional info.' });
+          return;
+        }
       } else {
-        const authUser = await signup({
+        authUser = await signup({
           email: facForm.email,
           password: facForm.password,
           name: facForm.contactName,
           type: 'facility',
         });
-        // Insert into facilities with snake_case columns
+        if (!authUser || !authUser.id) {
+          setErrors({ form: 'Signup failed: No user ID returned.' });
+          return;
+        }
         const { error: insErr } = await supabase.from('facilities').insert({
-          profile_id: authUser.id,           // FK → profiles.id
+          profile_id: authUser.id,
           facility_name: facForm.facilityName,
           facility_type: facForm.facilityType,
           address: facForm.address,
           contact_person: facForm.contactName,
         });
-        if (insErr) throw insErr;
-        console.log('[SIGNUP] Facility inserted');
+        if (insErr) {
+          setErrors({ form: insErr.message || 'Failed to save facility info.' });
+          return;
+        }
       }
-      console.log('[SIGNUP] Success!');
       setStep('success');
     } catch (e: any) {
-      console.error('[SIGNUP ERROR]', e);
-      setErrors({ form: e.message || 'Signup failed. Please try again.' });
+      setErrors({ form: e?.message || 'Signup failed. Please try again.' });
     } finally {
-      console.log('[SIGNUP] Done, loading should be false');
       setLoading(false);
     }
   };
