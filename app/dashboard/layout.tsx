@@ -17,15 +17,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/auth/login');
-    }
+    if (!loading && !user) router.replace('/auth/login');
   }, [user, loading, router]);
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-cream)' }}>
         <div style={{ width: '24px', height: '24px', border: '2px solid var(--color-border)', borderTopColor: 'var(--color-sage)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -34,50 +33,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--color-cream)' }}>
-      {/* Sidebar */}
+      {/* ── Desktop sidebar ── */}
       <aside
-        style={{
-          width: '240px',
-          flexShrink: 0,
-          background: 'var(--color-white)',
-          borderRight: '1px solid var(--color-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '0',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-        }}
         className="hidden md:flex"
+        style={{ width: '220px', flexShrink: 0, background: 'var(--color-white)', borderRight: '1px solid var(--color-border)', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}
       >
-        {/* Logo */}
-        <div style={{ padding: '24px var(--page-gutter) 20px', borderBottom: '1px solid var(--color-border)' }}>
-          <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: '1.1875rem', color: 'var(--color-ink)' }}>
+        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid var(--color-border)' }}>
+          <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: '1.125rem', color: 'var(--color-ink)' }}>
             Shift<em style={{ color: 'var(--color-sage)', fontStyle: 'italic' }}>Link</em>
           </Link>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 12px' }}>
+        <nav style={{ flex: 1, padding: '12px 10px' }}>
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Link
-                key={href}
-                href={href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.875rem',
-                  fontWeight: active ? 500 : 400,
-                  color: active ? 'var(--color-sage-dark)' : 'var(--color-ink-muted)',
-                  background: active ? 'var(--color-sage-light)' : 'transparent',
-                  marginBottom: '2px',
-                }}
-              >
+              <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', fontWeight: active ? 500 : 400, color: active ? 'var(--color-sage-dark)' : 'var(--color-ink-muted)', background: active ? 'var(--color-sage-light)' : 'transparent', marginBottom: '2px' }}>
                 <Icon size={16} />
                 {label}
               </Link>
@@ -85,57 +56,74 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* User */}
         <div style={{ padding: '16px', borderTop: '1px solid var(--color-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
             <div style={{ width: '32px', height: '32px', background: 'var(--color-sage-light)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <User size={14} style={{ color: 'var(--color-sage-dark)' }} />
             </div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.name}
-              </p>
-              <p style={{ fontSize: '0.6875rem', color: 'var(--color-ink-faint)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.email}
-              </p>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</p>
+              <p style={{ fontSize: '0.6875rem', color: 'var(--color-ink-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
             </div>
           </div>
-          <button
-            onClick={() => { logout(); router.push('/'); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', color: 'var(--color-ink-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', width: '100%' }}
-          >
+          <button onClick={() => { logout(); router.push('/'); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8125rem', color: 'var(--color-ink-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', width: '100%' }}>
             <LogOut size={14} /> Sign out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main style={{ flex: 1, minWidth: 0 }}>
+      {/* ── Main content ── */}
+      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Mobile top bar */}
         <div
           className="md:hidden"
-          style={{
-            background: 'var(--color-white)',
-            borderBottom: '1px solid var(--color-border)',
-            padding: '16px var(--page-gutter)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          style={{ background: 'var(--color-white)', borderBottom: '1px solid var(--color-border)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 40 }}
         >
           <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: '1.125rem', color: 'var(--color-ink)' }}>
             Shift<em style={{ color: 'var(--color-sage)', fontStyle: 'italic' }}>Link</em>
           </Link>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            {NAV_ITEMS.map(({ href, label }) => (
-              <Link key={href} href={href} style={{ fontSize: '0.75rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: pathname === href ? 'var(--color-sage)' : 'var(--color-ink-muted)', fontWeight: pathname === href ? 600 : 400 }}>
-                {label}
-              </Link>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ width: '28px', height: '28px', background: 'var(--color-sage-light)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <User size={13} style={{ color: 'var(--color-sage-dark)' }} />
+            </div>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-ink)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user.name.split(' ')[0]}
+            </span>
           </div>
         </div>
-        {children}
+
+        {/* Page content — add bottom padding on mobile for the nav bar */}
+        <div style={{ flex: 1, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="md:pb-0" style={{ paddingBottom: '72px' }}>
+            {children}
+          </div>
+        </div>
       </main>
+
+      {/* ── Mobile bottom nav bar ── */}
+      <nav
+        className="md:hidden"
+        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, background: 'var(--color-white)', borderTop: '1px solid var(--color-border)', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link key={href} href={href} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 8px', color: active ? 'var(--color-sage-dark)' : 'var(--color-ink-faint)', textDecoration: 'none' }}>
+              <Icon size={20} strokeWidth={active ? 2 : 1.5} />
+              <span style={{ fontSize: '0.625rem', fontWeight: active ? 600 : 400, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => { logout(); router.push('/'); }}
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 8px', color: 'var(--color-ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <LogOut size={20} strokeWidth={1.5} />
+          <span style={{ fontSize: '0.625rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Sign out</span>
+        </button>
+      </nav>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

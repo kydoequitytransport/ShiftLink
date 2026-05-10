@@ -4,60 +4,73 @@ import { useState, useEffect } from 'react';
 import { AuthUser } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 
+async function buildUser(userId: string, email: string): Promise<AuthUser | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('full_name, user_type')
+    .eq('id', userId)
+    .single();
+  if (error || !data) return null;
+  return {
+    id: userId,
+    name: data.full_name || '',
+    email,
+    type: data.user_type,
+  };
+}
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getUser = async () => {
-      setLoading(true);
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || '',
-          email: data.user.email || '',
-          type: data.user.user_metadata?.type || 'professional',
-        });
+    // Hydrate from existing session on mount
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const u = await buildUser(session.user.id, session.user.email ?? '');
+        setUser(u);
       } else {
         setUser(null);
       }
       setLoading(false);
-    };
-    getUser();
+    });
+
+    // Keep in sync with auth state changes (login / logout / token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const u = await buildUser(session.user.id, session.user.email ?? '');
+          setUser(u);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    console.log('[DEBUG] Supabase login response:', { data, error });
-    if (data?.user) {
-      setUser({
-        id: data.user.id,
-        name: data.user.user_metadata?.name || '',
-        email: data.user.email || '',
-        type: data.user.user_metadata?.type as import('@/lib/types').UserType || 'professional',
-      });
-      return data.user;
-    }
-    throw error;
+    if (error) throw error;
+    return data.user;
   };
 
-  const signup = async (payload: { email: string; password: string; name: string; type: string }) => {
+  const signup = async (payload: {
+    email: string;
+    password: string;
+    name: string;
+    type: string;
+  }) => {
     const { data, error } = await supabase.auth.signUp({
       email: payload.email,
       password: payload.password,
-      options: { data: { name: payload.name, type: payload.type } },
+      options: { data: { full_name: payload.name, user_type: payload.type } },
     });
-    if (data?.user) {
-      setUser({
-        id: data.user.id,
-        name: payload.name,
-        email: payload.email,
-        type: payload.type as import('@/lib/types').UserType,
-      });
-      return data.user;
-    }
-    throw error;
+    if (error) throw error;
+    if (!data.user) throw new Error('Signup failed');
+    return data.user;
   };
 
   const logout = async () => {
