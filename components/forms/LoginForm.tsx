@@ -23,13 +23,18 @@ export function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      const user = await login(email, password);
+      if (!user) {
+        setError('Login succeeded but no user profile found. Please contact support.');
+        setLoading(false);
+        return;
+      }
       router.push('/dashboard');
     } catch (e: any) {
       console.log('[DEBUG] Login error:', e);
       setError(e.message || 'Login failed');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
