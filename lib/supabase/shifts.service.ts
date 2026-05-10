@@ -86,17 +86,22 @@ export interface PostShiftPayload {
 /** Facility posts a new shift */
 export async function postShift(payload: PostShiftPayload): Promise<void> {
   const { error } = await supabase.from('shifts').insert({
-    facility_id: payload.facilityId,
-    role: payload.role,
-    shift_date: payload.shiftDate,
-    start_time: payload.startTime,
-    end_time: payload.endTime,
+    // DB Column Name : Payload Value
+    facility_id:   payload.facilityId,   
+    role:          payload.role,
+    shift_date:    payload.shiftDate,    
+    start_time:    payload.startTime,    
+    end_time:      payload.endTime,      
     rate_per_hour: payload.ratePerHour,
-    urgency: payload.urgency,
-    notes: payload.notes ?? null,
-    status: 'open',
+    urgency:       payload.urgency,
+    notes:         payload.notes ?? null,
+    status:        'open',
   });
-  if (error) throw error;
+
+  if (error) {
+    console.error('Insert Error Detail:', error);
+    throw error;
+  }
 }
 
 /** Fetch shifts posted by a specific facility */
