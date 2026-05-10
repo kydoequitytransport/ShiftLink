@@ -3,11 +3,19 @@ import { AuthUser, UserType } from '@/lib/types';
 
 /** Read profile row from DB and shape into AuthUser */
 export async function fetchProfile(userId: string, email: string): Promise<AuthUser | null> {
-  const { data, error } = await supabase
+  // Race against a 6-second timeout — a hung Supabase query (e.g. invalid/expired JWT)
+  // should never freeze the loading spinner indefinitely.
+  const queryPromise = supabase
     .from('profiles')
     .select('full_name, user_type')
     .eq('id', userId)
     .single();
+
+  const timeoutPromise = new Promise<{ data: null; error: Error }>(resolve =>
+    setTimeout(() => resolve({ data: null, error: new Error('timeout') }), 6000)
+  );
+
+  const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
   if (error || !data) return null;
   return { id: userId, name: data.full_name ?? '', email, type: data.user_type as UserType };
 }
