@@ -2,16 +2,21 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { MOCK_SHIFTS } from '@/lib/mock-data/shifts';
+import { useShifts } from '@/lib/hooks/useShifts';
 import { Button } from '@/components/ui/Button';
 import { Calendar, DollarSign, Clock, TrendingUp } from 'lucide-react';
 
-const stats = [
-  { label: 'Open Shifts', value: MOCK_SHIFTS.length.toString(), icon: Calendar, color: 'var(--color-sage)' },
-  { label: 'Avg. Rate', value: '$58/hr', icon: DollarSign, color: 'var(--color-accent)' },
-  { label: 'Urgent Now', value: MOCK_SHIFTS.filter(s => s.urgency === 'urgent').length.toString(), icon: Clock, color: '#D4541A' },
-  { label: 'Est. Weekly', value: '$2,400', icon: TrendingUp, color: 'var(--color-sage-dark)' },
-];
+
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const { allShifts } = useShifts(user?.id);
+  const urgentCount = allShifts.filter(s => s.urgency === 'urgent').length;
+  const stats = [
+    { label: 'Open Shifts', value: allShifts.length.toString(), icon: Calendar, color: 'var(--color-sage)' },
+    { label: 'Avg. Rate', value: allShifts.length ? `$${Math.round(allShifts.reduce((sum, s) => sum + (s.ratePerHour || 0), 0) / allShifts.length)}/hr` : '$0/hr', icon: DollarSign, color: 'var(--color-accent)' },
+    { label: 'Urgent Now', value: urgentCount.toString(), icon: Clock, color: '#D4541A' },
+    { label: 'Est. Weekly', value: '$2,400', icon: TrendingUp, color: 'var(--color-sage-dark)' },
+  ];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -35,7 +40,7 @@ export default function DashboardPage() {
           Good morning, {user?.name?.split(' ')[0]}.
         </h1>
         <p style={{ fontSize: '0.9375rem', color: 'var(--color-ink-muted)', lineHeight: 1.7 }}>
-          There are <strong>{MOCK_SHIFTS.filter(s => s.urgency === 'urgent').length} urgent shifts</strong> available near you right now.
+          There are <strong>{urgentCount} urgent shifts</strong> available near you right now.
         </p>
       </div>
 

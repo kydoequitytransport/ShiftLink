@@ -22,10 +22,14 @@ export function LoginForm() {
     }
     setError('');
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800)); // mock delay
-    login(email, password);
+    try {
+      await login(email, password);
+      router.push('/dashboard');
+    } catch (e: any) {
+      console.log('[DEBUG] Login error:', e);
+      setError(e.message || 'Login failed');
+    }
     setLoading(false);
-    router.push('/dashboard');
   };
 
   return (
@@ -73,9 +77,7 @@ export function LoginForm() {
         </Link>
       </p>
 
-      <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-ink-faint)' }}>
-        <em>Demo: any email + any password (8+ chars) works.</em>
-      </p>
+      {/* Only registered users can log in. */}
     </div>
   );
 }

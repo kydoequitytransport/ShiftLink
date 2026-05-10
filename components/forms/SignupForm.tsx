@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { UserType, ShiftRole } from '@/lib/types';
@@ -8,6 +9,8 @@ import { SHIFT_ROLES } from '@/lib/utils';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { supabase } from '@/lib/supabaseClient';
 
 type Step = 'type' | 'details' | 'success';
 
@@ -52,6 +55,7 @@ export function SignupForm() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { signup } = useAuth();
 
   const validatePro = () => {
     const e: Record<string, string> = {};
@@ -86,10 +90,51 @@ export function SignupForm() {
     }
     setErrors({});
     setLoading(true);
-    // Mock submission delay
-    await new Promise((r) => setTimeout(r, 1200));
+    try {
+      if (userType === 'professional') {
+        // Sign up user in Supabase auth
+        const user = await signup({
+          email: proForm.email,
+          password: proForm.password,
+          name: proForm.name,
+          type: 'professional',
+        });
+        // Insert into professionals table
+        await supabase.from('professionals').insert([
+          {
+            id: user.id,
+            name: proForm.name,
+            email: proForm.email,
+            role: proForm.role,
+            licenseNumber: proForm.licenseNumber,
+            yearsOfExperience: Number(proForm.yearsExp) || 0,
+          },
+        ]);
+      } else {
+        // Sign up user in Supabase auth
+        const user = await signup({
+          email: facForm.email,
+          password: facForm.password,
+          name: facForm.contactName,
+          type: 'facility',
+        });
+        // Insert into facilities table
+        await supabase.from('facilities').insert([
+          {
+            id: user.id,
+            name: facForm.facilityName,
+            email: facForm.email,
+            facilityType: facForm.facilityType,
+            address: facForm.address,
+            contactPerson: facForm.contactName,
+          },
+        ]);
+      }
+      setStep('success');
+    } catch (e: any) {
+      setErrors({ form: e.message || 'Signup failed' });
+    }
     setLoading(false);
-    setStep('success');
   };
 
   if (step === 'success') {

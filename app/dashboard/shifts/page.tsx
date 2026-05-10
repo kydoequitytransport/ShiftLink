@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useShifts } from '@/lib/hooks/useShifts';
 import { ShiftCard } from '@/components/shifts/ShiftCard';
 import { ShiftFilter } from '@/components/shifts/ShiftFilter';
-import { MOCK_SHIFTS } from '@/lib/mock-data/shifts';
+// Removed MOCK_SHIFTS import; all data comes from useShifts
 
 export default function ShiftBoardPage() {
   const { user } = useAuth();

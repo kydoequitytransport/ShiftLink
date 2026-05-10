@@ -2,42 +2,68 @@
 
 import { useState, useEffect } from 'react';
 import { AuthUser } from '@/lib/types';
-import { MOCK_AUTH_USER } from '@/lib/mock-data/shifts';
-
-const AUTH_KEY = 'shiftlink_auth';
+import { supabase } from '@/lib/supabaseClient';
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(AUTH_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    const getUser = async () => {
+      setLoading(true);
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUser({
+          id: data.user.id,
+          name: data.user.user_metadata?.name || '',
+          email: data.user.email || '',
+          type: data.user.user_metadata?.type || 'professional',
+        });
+      } else {
+        setUser(null);
       }
-    } catch {
-      // session storage unavailable
-    } finally {
       setLoading(false);
-    }
+    };
+    getUser();
   }, []);
 
-  const login = (email: string, _password: string) => {
-    // Mock auth — always succeeds
-    const authUser: AuthUser = {
-      ...MOCK_AUTH_USER,
-      email,
-    };
-    sessionStorage.setItem(AUTH_KEY, JSON.stringify(authUser));
-    setUser(authUser);
-    return authUser;
+  const login = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('[DEBUG] Supabase login response:', { data, error });
+    if (data?.user) {
+      setUser({
+        id: data.user.id,
+        name: data.user.user_metadata?.name || '',
+        email: data.user.email || '',
+        type: data.user.user_metadata?.type as import('@/lib/types').UserType || 'professional',
+      });
+      return data.user;
+    }
+    throw error;
   };
 
-  const logout = () => {
-    sessionStorage.removeItem(AUTH_KEY);
+  const signup = async (payload: { email: string; password: string; name: string; type: string }) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+      options: { data: { name: payload.name, type: payload.type } },
+    });
+    if (data?.user) {
+      setUser({
+        id: data.user.id,
+        name: payload.name,
+        email: payload.email,
+        type: payload.type as import('@/lib/types').UserType,
+      });
+      return data.user;
+    }
+    throw error;
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
   };
 
-  return { user, loading, login, logout };
+  return { user, loading, login, signup, logout };
 }

@@ -40,7 +40,50 @@ npm run dev
 ### Next.js 14 (App Router) + TypeScript
 **Why:** Next.js App Router is the 2025–2026 standard for production React. Server Components give clean separation of data and UI; the file-based routing is readable in a review context. TypeScript makes the two-sided type model (`UserType`, `Shift`, `AuthUser`) explicit and self-documenting — evaluators can trace data shapes immediately.
 
-**Why not PERN or Supabase:** The brief explicitly states no backend is required. Introducing a Postgres + Express layer (or Supabase) would add infrastructure complexity with zero user-facing value. When a real backend is needed, Supabase or PlanetScale can be dropped in by uncommenting the `.env.example` blocks — the service layer is already abstracted via hooks.
+**Supabase Integration:**
+This version uses Supabase as a real backend for persistence. All shifts, claims, professionals, and facilities are stored in Supabase tables. The app uses `@supabase/supabase-js` for all data operations. See `lib/supabaseClient.ts` and `lib/hooks/useShifts.ts` for integration details.
+
+**Supabase Table Schema:**
+
+```
+-- Facilities table
+create table facilities (
+	id uuid primary key default uuid_generate_v4(),
+	name text not null
+);
+
+-- Professionals table
+create table professionals (
+	id uuid primary key default uuid_generate_v4(),
+	name text not null,
+	email text unique not null
+);
+
+-- Shifts table
+create table shifts (
+	id uuid primary key default uuid_generate_v4(),
+	role text not null,
+	facility_id uuid references facilities(id) on delete cascade,
+	date date not null,
+	time text not null,
+	rate numeric not null,
+	claimed_by uuid references professionals(id),
+	created_at timestamp with time zone default timezone('utc', now())
+);
+
+-- Claims table (optional, for audit trail)
+create table claims (
+	id uuid primary key default uuid_generate_v4(),
+	shift_id uuid references shifts(id) on delete cascade,
+	professional_id uuid references professionals(id) on delete cascade,
+	claimed_at timestamp with time zone default timezone('utc', now())
+);
+```
+
+**Tradeoffs:**
+- Real-time persistence via Supabase, no more mock data.
+- Minimal auth (can be extended).
+- Easy to revert to mock data if needed (see git history).
 
 ### Tailwind CSS (utility classes + CSS variables)
 **Why:** Tailwind gives fine-grained control over the spacing and typography hierarchy the eucalyptus.health design reference demands. CSS custom properties (`--color-sage`, `--font-display`, etc.) are used for theming so a single change propagates everywhere — this is what a token-based design system looks like before Figma Tokens or Style Dictionary are introduced.
@@ -88,7 +131,7 @@ shiftlink/
 
 ## Tradeoffs
 
-- **No real database:** All state is in-memory / sessionStorage. Adding Supabase is the natural next step.
+**Database:** All state is now persisted in Supabase. No more in-memory/sessionStorage for shifts.
 - **No image assets:** Heroic whitespace and typography are doing the visual heavy lifting intentionally, per the eucalyptus.health reference.
 - **Mock claim is local-only:** Claiming a shift updates local React state; it resets on page refresh. A real implementation would PATCH the shift via API.
 - **No server-side auth middleware:** The dashboard guard is client-side only (`useEffect` redirect). In production, Next.js middleware would handle this at the edge.
