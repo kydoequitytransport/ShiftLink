@@ -77,9 +77,11 @@ export function SignupForm() {
         // Insert into professionals with snake_case columns matching our SQL migration
         const { error: insErr } = await supabase.from('professionals').insert({
           profile_id: authUser.id,          // FK → profiles.id
+          name: proForm.name,
+          email: proForm.email,
           role: proForm.role,
           license_number: proForm.licenseNumber,
-          years_experience: Number(proForm.yearsExp) || 0,
+          years_of_experience: Number(proForm.yearsExp) || 0,
         });
         if (insErr) throw insErr;
       } else {
