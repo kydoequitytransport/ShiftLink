@@ -66,6 +66,14 @@ export function SignupForm() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setLoading(true);
+    let finished = false;
+    // Failsafe: timeout after 10s
+    const timeout = setTimeout(() => {
+      if (!finished) {
+        setLoading(false);
+        setErrors({ form: 'Signup timed out. Please try again or check your connection.' });
+      }
+    }, 10000);
     try {
       let authUser;
       if (userType === 'professional') {
@@ -114,10 +122,16 @@ export function SignupForm() {
           return;
         }
       }
+      finished = true;
+      clearTimeout(timeout);
       setStep('success');
     } catch (e: any) {
+      finished = true;
+      clearTimeout(timeout);
       setErrors({ form: e?.message || 'Signup failed. Please try again.' });
     } finally {
+      finished = true;
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
