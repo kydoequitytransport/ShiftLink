@@ -45,20 +45,23 @@ export function useAuth() {
     let finished = false;
     const timeout = setTimeout(() => {
       if (!finished) {
-        console.error('[useAuth] Hydration timed out');
         setLoading(false);
+        // Show error in UI if possible (global alert or similar)
+        if (typeof window !== 'undefined') {
+          window.alert('Login session found but no user profile exists. Please contact support.');
+        }
       }
     }, 10000);
     // Hydrate from existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        console.log('[useAuth] Found session, fetching user...');
         const u = await buildUser(session.user.id, session.user.email ?? '');
         setUser(u ?? null);
-        console.log('[useAuth] User hydrated:', u);
+        if (!u && typeof window !== 'undefined') {
+          window.alert('Login session found but no user profile exists. Please contact support.');
+        }
       } else {
         setUser(null);
-        console.log('[useAuth] No session found');
       }
       finished = true;
       clearTimeout(timeout);
@@ -69,13 +72,13 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          console.log('[useAuth] Auth state change: user found');
           const u = await buildUser(session.user.id, session.user.email ?? '');
           setUser(u ?? null);
-          console.log('[useAuth] User hydrated (auth change):', u);
+          if (!u && typeof window !== 'undefined') {
+            window.alert('Login session found but no user profile exists. Please contact support.');
+          }
         } else {
           setUser(null);
-          console.log('[useAuth] Auth state change: no user');
         }
         finished = true;
         clearTimeout(timeout);
