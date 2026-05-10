@@ -23,9 +23,8 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // In-memory: just set user to null on mount
+  // In-memory: set loading to false on mount (do not reset user)
   useEffect(() => {
-    setUser(null);
     setLoading(false);
   }, []);
 
