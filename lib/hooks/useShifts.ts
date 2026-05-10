@@ -7,7 +7,7 @@ import { Shift, FilterState } from '@/lib/types';
 
 export function useShifts(userId?: string) {
   // Mock data: static shifts array
-  const initialShifts: Shift[] = [
+  const defaultShifts: Shift[] = [
     {
       id: '1',
       role: 'Registered Nurse',
@@ -46,7 +46,13 @@ export function useShifts(userId?: string) {
     },
   ];
 
-  const [shifts, setShifts] = useState<Shift[]>(initialShifts);
+  const [shifts, setShifts] = useState<Shift[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('mockShifts');
+      if (stored) return JSON.parse(stored);
+    }
+    return defaultShifts;
+  });
   const [filters, setFilters] = useState<FilterState>({ role: 'All', date: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,13 +67,15 @@ export function useShifts(userId?: string) {
 
   const claimShift = async (shiftId: string) => {
     if (!userId) return false;
-    setShifts((prev) =>
-      prev.map((s) =>
+    setShifts((prev) => {
+      const updated = prev.map((s) =>
         s.id === shiftId && !s.claimedBy
           ? { ...s, claimedBy: userId }
           : s
-      )
-    );
+      );
+      if (typeof window !== 'undefined') sessionStorage.setItem('mockShifts', JSON.stringify(updated));
+      return updated;
+    });
     return true;
   };
 
