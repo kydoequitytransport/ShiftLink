@@ -19,18 +19,25 @@ async function buildUser(userId: string, email: string): Promise<AuthUser | null
   return null;
 }
 
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // In-memory: set loading to false on mount (do not reset user)
+  // Hydrate user from sessionStorage on mount
   useEffect(() => {
+    const stored = typeof window !== 'undefined' ? sessionStorage.getItem('mockUser') : null;
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     if (email === mockUser.email && password === mockUser.password) {
-      setUser({ id: mockUser.id, name: mockUser.name, email: mockUser.email, type: mockUser.type });
+      const u = { id: mockUser.id, name: mockUser.name, email: mockUser.email, type: mockUser.type };
+      setUser(u);
+      if (typeof window !== 'undefined') sessionStorage.setItem('mockUser', JSON.stringify(u));
       return mockUser;
     }
     throw new Error('Invalid credentials');
@@ -47,6 +54,7 @@ export function useAuth() {
 
   const logout = async () => {
     setUser(null);
+    if (typeof window !== 'undefined') sessionStorage.removeItem('mockUser');
   };
 
   return { user, loading, login, signup, logout };
