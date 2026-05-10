@@ -104,8 +104,9 @@ export function SignupForm() {
       setStep('success');
     } catch (e: any) {
       setErrors({ form: e.message || 'Signup failed. Please try again.' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (step === 'success') {
