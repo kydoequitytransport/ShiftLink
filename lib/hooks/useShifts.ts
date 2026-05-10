@@ -3,7 +3,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Shift, FilterState } from '@/lib/types';
 // No more Supabase! In-memory mock shifts only
+import { useState, useMemo } from 'react';
+import { Shift, FilterState } from '@/lib/types';
 
+export function useShifts(userId?: string) {
   // Mock data: static shifts array
   const initialShifts: Shift[] = [
     {
