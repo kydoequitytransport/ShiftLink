@@ -42,14 +42,26 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let finished = false;
+    const timeout = setTimeout(() => {
+      if (!finished) {
+        console.error('[useAuth] Hydration timed out');
+        setLoading(false);
+      }
+    }, 10000);
     // Hydrate from existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
+        console.log('[useAuth] Found session, fetching user...');
         const u = await buildUser(session.user.id, session.user.email ?? '');
         setUser(u ?? null);
+        console.log('[useAuth] User hydrated:', u);
       } else {
         setUser(null);
+        console.log('[useAuth] No session found');
       }
+      finished = true;
+      clearTimeout(timeout);
       setLoading(false);
     });
 
@@ -57,11 +69,16 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
+          console.log('[useAuth] Auth state change: user found');
           const u = await buildUser(session.user.id, session.user.email ?? '');
           setUser(u ?? null);
+          console.log('[useAuth] User hydrated (auth change):', u);
         } else {
           setUser(null);
+          console.log('[useAuth] Auth state change: no user');
         }
+        finished = true;
+        clearTimeout(timeout);
         setLoading(false);
       }
     );
